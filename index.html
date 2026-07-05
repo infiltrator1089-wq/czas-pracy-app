@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#0d0d0d">
+<title>Czas Pracy</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="week-header">
+    <button id="prevWeek" class="nav-btn" aria-label="Poprzedni tydzień">‹</button>
+    <h1 id="weekTitle">📅 Tydzień: —</h1>
+    <button id="nextWeek" class="nav-btn" aria-label="Następny tydzień">›</button>
+  </header>
+
+  <div class="table-wrap">
+    <table id="weekTable">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>🟢 Początek</th>
+          <th>💳 Włożenie karty</th>
+          <th>💳 Wyjęcie karty</th>
+          <th>⏱️ Czas na karcie</th>
+          <th>🔴 Koniec</th>
+          <th>☕ Pauza</th>
+          <th>🟧 Czas brutto</th>
+          <th>✅ Czas netto</th>
+          <th>💬 Uwagi</th>
+        </tr>
+      </thead>
+      <tbody id="weekBody"></tbody>
+    </table>
+    <div class="table-actions">
+      <button id="copyBtn" title="Kopiuj podsumowanie">📋</button>
+      <button id="downloadBtn" title="Pobierz CSV">⬇️</button>
+    </div>
+  </div>
+
+  <section class="summary">
+    <h2>📊 Podsumowanie tygodnia (<span id="workedDaysLabel">0</span> dni)</h2>
+    <table class="summary-table">
+      <tbody>
+        <tr><td>🟧 Łączny czas brutto</td><td id="sumGross">00:00</td></tr>
+        <tr><td>✅ Łączny czas netto</td><td id="sumNet">00:00</td></tr>
+        <tr><td>☕ Łączna pauza</td><td id="sumPause">00:00</td></tr>
+        <tr><td>📅 Przepracowane dni</td><td id="sumDays">0</td></tr>
+        <tr><td>📈 Średnia netto/dzień</td><td id="sumAvg">00:00</td></tr>
+      </tbody>
+    </table>
+    <p id="motivation"></p>
+  </section>
+
+  <footer class="history">
+    <button id="historyBtn">📚 Historia tygodni</button>
+    <div id="historyList" class="history-list hidden"></div>
+  </footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

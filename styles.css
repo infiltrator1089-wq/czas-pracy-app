@@ -1,0 +1,196 @@
+:root {
+  --bg: #0d0d0f;
+  --card: #17181b;
+  --card-alt: #1d1e22;
+  --border: #2a2b2f;
+  --text: #e8e8ea;
+  --muted: #9a9ba0;
+  --green: #34c759;
+  --accent: #4da3ff;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 15px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-bottom: 48px;
+}
+
+.week-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.week-header h1 {
+  font-size: 18px;
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.nav-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.nav-btn:active { background: var(--card-alt); }
+
+.table-wrap {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 760px;
+}
+
+thead th {
+  text-align: left;
+  padding: 10px 8px;
+  font-size: 12.5px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) { background: var(--card-alt); }
+
+tbody tr.today { outline: 1px solid var(--accent); outline-offset: -1px; }
+
+.day-cell {
+  font-weight: 600;
+}
+.day-cell .dow { color: var(--muted); font-weight: 400; font-size: 12px; display: block; }
+
+input[type="time"], input[type="text"] {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text);
+  font-size: 14px;
+  width: 90px;
+  padding: 6px 4px;
+  border-radius: 6px;
+  font-family: inherit;
+}
+input[type="text"] { width: 110px; }
+input[type="time"]:focus, input[type="text"]:focus {
+  border-color: var(--accent);
+  outline: none;
+  background: rgba(77,163,255,0.08);
+}
+input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
+
+.computed { color: var(--muted); }
+.computed.net { color: var(--green); font-weight: 700; }
+.computed.gross { color: #ffb454; font-weight: 600; }
+
+.table-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  padding: 6px 8px;
+}
+.table-actions button {
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.summary {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.summary h2 { font-size: 16px; margin: 0 0 10px; }
+.summary-table { width: 100%; border-collapse: collapse; }
+.summary-table td {
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table td:last-child {
+  text-align: right;
+  font-weight: 700;
+}
+#motivation {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.history {
+  text-align: center;
+}
+#historyBtn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.history-list {
+  margin-top: 10px;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.history-list.hidden { display: none; }
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.history-item:hover, .history-item:active { background: var(--card-alt); }
+.history-item .h-net { color: var(--green); font-weight: 700; }
+
+@media (max-width: 480px) {
+  .app { padding: 10px; }
+  .week-header h1 { font-size: 15px; }
+}
