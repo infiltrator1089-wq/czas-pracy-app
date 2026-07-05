@@ -133,6 +133,54 @@ function fieldToLabel(field) {
   return { start: 'Początek', cardIn: 'Włożenie karty', cardOut: 'Wyjęcie karty', end: 'Koniec', pause: 'Pauza', note: 'Uwagi' }[field];
 }
 
+// --- validation (display-only, never blocks saving) ---
+const TIME_FORMAT_RE = /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/;
+
+function isValidTimeFormat(str) {
+  if (!str) return true;
+  return TIME_FORMAT_RE.test(str);
+}
+
+function validateDay(day) {
+  const fieldErrors = {};
+  ['start', 'cardIn', 'cardOut', 'end', 'pause'].forEach(field => {
+    fieldErrors[field] = Boolean(day[field]) && !isValidTimeFormat(day[field]);
+  });
+
+  const startEndMismatch = Boolean(day.start) !== Boolean(day.end);
+  const cardMismatch = Boolean(day.cardIn) !== Boolean(day.cardOut);
+  const missingPair = {
+    start: startEndMismatch && !day.start,
+    end: startEndMismatch && !day.end,
+    cardIn: cardMismatch && !day.cardIn,
+    cardOut: cardMismatch && !day.cardOut,
+  };
+
+  const c = computeDay(day);
+  const negativeNet = c.net != null && c.net < 0;
+  const longDay = c.gross != null && c.gross > 16 * 60;
+
+  const hasIssue = Object.values(fieldErrors).some(Boolean)
+    || Object.values(missingPair).some(Boolean)
+    || negativeNet
+    || longDay;
+
+  return { fieldErrors, missingPair, negativeNet, longDay, hasIssue };
+}
+
+function dayIssueTitle(v) {
+  const msgs = [];
+  Object.entries(v.fieldErrors).forEach(([field, bad]) => {
+    if (bad) msgs.push(`Nieprawidłowy format: ${fieldToLabel(field)}`);
+  });
+  if (v.negativeNet) msgs.push('Pauza dłuższa niż czas pracy');
+  if (v.longDay) msgs.push('Podejrzanie długi dzień — sprawdź czasy');
+  Object.entries(v.missingPair).forEach(([field, bad]) => {
+    if (bad) msgs.push(`Brakuje: ${fieldToLabel(field)}`);
+  });
+  return msgs.join(' • ');
+}
+
 function render() {
   weekTitle.textContent = `📅 Tydzień: ${formatWeekRange(currentMonday)}`;
   weekBody.innerHTML = '';
@@ -144,15 +192,15 @@ function render() {
     if (day.date === todayISO) tr.classList.add('today');
 
     tr.innerHTML = `
-      <td class="day-cell"><span class="dow">${DOW[idx]}</span>${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}</td>
+      <td class="day-cell"><span class="dow">${DOW[idx]}</span>${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}<span class="day-warning-icon hidden">⚠️</span></td>
       <td><input type="time" data-field="start" value="${day.start}"></td>
       <td><input type="time" data-field="cardIn" value="${day.cardIn}"></td>
       <td><input type="time" data-field="cardOut" value="${day.cardOut}"></td>
-      <td class="computed">${formatMin(c.cardTime)}</td>
+      <td class="computed"></td>
       <td><input type="time" data-field="end" value="${day.end}"></td>
       <td><input type="time" data-field="pause" value="${day.pause}"></td>
-      <td class="computed gross">${formatMin(c.gross)}</td>
-      <td class="computed net">${formatMin(c.net)}</td>
+      <td class="computed gross"></td>
+      <td class="computed net"></td>
       <td><input type="text" data-field="note" value="${day.note}" placeholder="—"></td>
     `;
 
@@ -161,23 +209,47 @@ function render() {
         const field = input.dataset.field;
         currentDays[idx][field] = input.value;
         persistWeek(toISODate(currentMonday), currentDays);
-        renderComputedRow(tr, currentDays[idx]);
+        updateRowDisplay(tr, currentDays[idx]);
         renderSummary();
       });
     });
 
+    updateRowDisplay(tr, day);
     weekBody.appendChild(tr);
   });
 
   renderSummary();
 }
 
-function renderComputedRow(tr, day) {
+function updateRowDisplay(tr, day) {
   const c = computeDay(day);
+  const v = validateDay(day);
+
   const cells = tr.querySelectorAll('.computed');
   cells[0].textContent = formatMin(c.cardTime);
+
   cells[1].textContent = formatMin(c.gross);
-  cells[2].textContent = formatMin(c.net);
+  cells[1].classList.toggle('gross-warning', v.longDay);
+  if (v.longDay) cells[1].title = 'Podejrzanie długi dzień — sprawdź czasy';
+  else cells[1].removeAttribute('title');
+
+  cells[2].textContent = (v.negativeNet ? '⚠ ' : '') + formatMin(c.net);
+  cells[2].classList.toggle('net-negative', v.negativeNet);
+  if (v.negativeNet) cells[2].title = 'Pauza dłuższa niż czas pracy';
+  else cells[2].removeAttribute('title');
+
+  ['start', 'cardIn', 'cardOut', 'end', 'pause'].forEach(field => {
+    const input = tr.querySelector(`input[data-field="${field}"]`);
+    input.classList.toggle('input-error', Boolean(v.fieldErrors[field]));
+    input.classList.toggle('input-missing', Boolean(v.missingPair[field]));
+    if (v.fieldErrors[field]) input.title = 'Nieprawidłowy format czasu (HH:MM)';
+    else if (v.missingPair[field]) input.title = 'Brakuje pary — uzupełnij drugie pole';
+    else input.removeAttribute('title');
+  });
+
+  const icon = tr.querySelector('.day-warning-icon');
+  icon.classList.toggle('hidden', !v.hasIssue);
+  icon.title = dayIssueTitle(v);
 }
 
 function renderSummary() {
@@ -299,8 +371,34 @@ function renderHistory() {
 
 render();
 
+// --- service worker + update banner ---
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateBar(reg);
+          }
+        });
+      });
+    }).catch(() => {});
   });
+
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
+}
+
+function showUpdateBar(reg) {
+  const bar = document.getElementById('updateBar');
+  bar.classList.remove('hidden');
+  document.getElementById('updateReloadBtn').addEventListener('click', () => {
+    if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+  }, { once: true });
 }
