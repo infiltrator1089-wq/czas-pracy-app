@@ -193,15 +193,15 @@ function render() {
 
     tr.innerHTML = `
       <td class="day-cell"><span class="dow">${DOW[idx]}</span>${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}<span class="day-warning-icon hidden">⚠️</span></td>
-      <td><input type="time" data-field="start" value="${day.start}"></td>
-      <td><input type="time" data-field="cardIn" value="${day.cardIn}"></td>
-      <td><input type="time" data-field="cardOut" value="${day.cardOut}"></td>
-      <td class="computed"></td>
-      <td><input type="time" data-field="end" value="${day.end}"></td>
-      <td><input type="time" data-field="pause" value="${day.pause}"></td>
-      <td class="computed gross"></td>
-      <td class="computed net"></td>
-      <td><input type="text" data-field="note" value="${day.note}" placeholder="—"></td>
+      <td data-label="Początek"><input type="time" data-field="start" value="${day.start}"></td>
+      <td data-label="Włożenie karty"><input type="time" data-field="cardIn" value="${day.cardIn}"></td>
+      <td data-label="Wyjęcie karty"><input type="time" data-field="cardOut" value="${day.cardOut}"></td>
+      <td class="computed" data-label="Czas na karcie"></td>
+      <td data-label="Koniec"><input type="time" data-field="end" value="${day.end}"></td>
+      <td data-label="Pauza"><input type="time" data-field="pause" value="${day.pause}"></td>
+      <td class="computed gross" data-label="Czas brutto"></td>
+      <td class="computed net" data-label="Czas netto"></td>
+      <td data-label="Uwagi"><input type="text" data-field="note" value="${day.note}" placeholder="—"></td>
     `;
 
     tr.querySelectorAll('input').forEach(input => {
