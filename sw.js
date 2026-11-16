@@ -1,4 +1,4 @@
-const CACHE = 'czas-pracy-v5';
+const CACHE = 'czas-pracy-v6';
 const APP_SHELL = ['./', './index.html', './styles.css', './app.js', './sync.js', './manifest.webmanifest', './icon.svg'];
 const NETWORK_FIRST_FILES = ['index.html', 'app.js', 'sync.js', 'styles.css'];
 

@@ -94,8 +94,11 @@ Czas: ok. 10–15 minut, jednorazowo. Potrzebujesz konta Google i komputera.
       a w **Historii** pojawia się wiersz `update` ze **starą** wartością.
 - [ ] Włącz tryb samolotowy, zmień coś → pasek pokazuje `⏳ … Offline`. Wyłącz tryb
       samolotowy i wróć do aplikacji → samo zmienia się na ✅.
-- [ ] Wyczyść wszystkie pola jednego dnia → w **Dane** ten wiersz ma `deleted = TRUE`,
-      **ale godziny w nim zostają**, a w **Historii** jest wiersz `delete`.
+- [ ] Wyczyść wszystkie pola jednego dnia → w **Dane** ten wiersz ma `deleted = TRUE`.
+      Uwaga: pola czyszczone po kolei, gdy jest zasięg, synchronizują się jako osobne
+      zmiany, więc w wierszu mogą zostać tylko ostatnie niewyczyszczone pola. **Pełne,
+      pierwotne wartości dnia są zawsze w Historii** (wiersze `update` / `delete`,
+      kolumny `prev_…`).
 
 ## Zabezpieczenie karty „Historia” (zalecane)
 
@@ -106,10 +109,13 @@ mógł dopisywać.
 
 ## Co zrobić, gdy…
 
-**…przypadkowo wyczyściłem dzień.** Dane nie przepadły. Otwórz arkusz:
-karta **Dane** ma wiersz tego dnia z `deleted = TRUE` i starymi godzinami, a karta
-**Historia** ma wiersz `delete` z wartościami sprzed wyczyszczenia (kolumny `prev_…`).
-Wpisz godziny z powrotem w aplikacji.
+**…przypadkowo wyczyściłem dzień.** Dane nie przepadły, ale szukaj ich w karcie
+**Historia**, nie w „Dane”. Wiersz tego dnia w **Dane** ma `deleted = TRUE`, lecz mógł
+stracić część pól (pola czyszczone po kolei z zasięgiem wysyłają się jako osobne zmiany).
+W **Historii** znajdź po dacie (kolumna `date`) **najwcześniejszy** wiersz `update` lub
+`delete` z tego dnia — kolumny `prev_start`, `prev_cardIn`, `prev_cardOut`, `prev_end`,
+`prev_pause`, `prev_note` zawierają pierwotne wartości sprzed czyszczenia. Wpisz je
+z powrotem w aplikacji.
 
 **…telefon się zepsuł / mam nowy telefon.** Zainstaluj aplikację → **⚙** → wpisz
 adres i token → **Zapisz** → **☁️ Przywróć z chmury**. Aplikacja pobierze wszystkie

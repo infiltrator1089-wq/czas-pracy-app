@@ -224,7 +224,7 @@ function render() {
     if (day.date === todayISO) tr.classList.add('today');
 
     tr.innerHTML = `
-      <td class="day-cell"><span class="dow">${DOW[idx]}</span>${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}<span class="day-warning-icon hidden">⚠️</span></td>
+      <td class="day-cell"><span class="day-label"><span class="dow">${DOW[idx]}</span>${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}<span class="day-warning-icon hidden">⚠️</span></span><button type="button" class="day-delete hidden" title="Usuń wszystkie wpisy z tego dnia" aria-label="Usuń dzień">🗑</button></td>
       <td data-label="Początek"><input type="time" data-field="start" value="${escapeHtml(day.start)}"></td>
       <td data-label="Włożenie karty"><input type="time" data-field="cardIn" value="${escapeHtml(day.cardIn)}"></td>
       <td data-label="Wyjęcie karty"><input type="time" data-field="cardOut" value="${escapeHtml(day.cardOut)}"></td>
@@ -247,6 +247,21 @@ function render() {
         updateRowDisplay(tr, d);
         renderSummary();
       });
+    });
+
+    // „Usuń dzień": czyści WSZYSTKIE pola naraz → jeden znacznik usunięcia. Dzięki temu serwer zachowuje
+    // w wierszu pełny, ostatni znany stan dnia, a Historia ma cały dzień w jednym wierszu
+    // (czyszczenie pole po polu wysyła się jako kolejne, osobne zmiany).
+    tr.querySelector('.day-delete').addEventListener('click', () => {
+      const d = currentDays[idx];
+      if (isDayEmpty(d)) return;
+      const label = `${DOW[idx]} ${pad2(fromISODate(d.date).getDate())}.${pad2(fromISODate(d.date).getMonth() + 1)}`;
+      if (!confirm(`Usunąć wszystkie wpisy z dnia ${label}?`)) return;
+      ['start', 'cardIn', 'cardOut', 'end', 'pause', 'note'].forEach(f => { d[f] = ''; });
+      touchDay(d);
+      persistWeek(toISODate(currentMonday), currentDays);
+      Sync.onDayChanged(d);
+      render();
     });
 
     updateRowDisplay(tr, day);
@@ -285,6 +300,8 @@ function updateRowDisplay(tr, day) {
   const icon = tr.querySelector('.day-warning-icon');
   icon.classList.toggle('hidden', !v.hasIssue);
   icon.title = dayIssueTitle(v);
+
+  tr.querySelector('.day-delete').classList.toggle('hidden', isDayEmpty(day));
 }
 
 function renderSummary() {

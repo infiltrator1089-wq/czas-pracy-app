@@ -6,7 +6,8 @@
  *
  * Arkusz „Dane”      — aktualny stan: jeden wiersz = jeden dzień (po ID).
  *                      Usunięty dzień zostaje jako wiersz z deleted=TRUE
- *                      (miękkie usuwanie, wartości pól są zachowane).
+ *                      (miękkie usuwanie: zostaje ostatni znany stan pól;
+ *                      pełne poprzednie wartości są w „Historii”).
  * Arkusz „Historia”  — dziennik append-only: przy każdym utworzeniu,
  *                      zmianie, usunięciu lub przywróceniu dopisywany jest
  *                      wiersz z POPRZEDNIMI wartościami wszystkich pól.

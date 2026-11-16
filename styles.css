@@ -161,6 +161,22 @@ input.input-missing {
 }
 .day-warning-icon.hidden { display: none; }
 
+.day-label { display: inline-block; }
+.day-delete {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-left: 8px;
+  font-size: 15px;
+  line-height: 1.2;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.day-delete:active { background: var(--card-alt); }
+.day-delete.hidden { display: none; }
+
 .table-actions {
   display: flex;
   gap: 6px;

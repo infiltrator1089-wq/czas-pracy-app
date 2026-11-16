@@ -31,7 +31,9 @@ Kod: [sync.js](sync.js) (klient), [apps-script/Code.gs](apps-script/Code.gs)
   `timesheet.settings.v1` (adres skryptu + token), `timesheet.syncmeta.v1`.
 - Wyczyszczenie wszystkich pól dnia = usunięcie wpisu (znacznik usunięcia
   w kolejce). Serwer robi **miękkie usuwanie** (wiersz zostaje z
-  `deleted=TRUE` i starymi wartościami), a arkusz „Historia” jest
+  `deleted=TRUE` i ostatnim znanym stanem — pola czyszczone po kolei online już
+  wcześniej zsynchronizowały się jako puste, więc pełną kopię dnia daje dopiero
+  „Historia”), a arkusz „Historia” jest
   **append-only** — kod nigdy nie może jej kasować ani nadpisywać.
 - Konflikt: wygrywa wyższy `updatedAt`, przy remisie większe ID; jeden
   żywy wpis na datę. Ta sama reguła jest w `sync.js` (`wins`) i `Code.gs` (`wins_`)
