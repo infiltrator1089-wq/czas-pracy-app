@@ -58,11 +58,42 @@ function emptyDay(dateISO) {
 
 // --- storage ---
 function loadAllWeeks() {
+  const raw = localStorage.getItem(STORAGE_KEY);
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    return JSON.parse(raw) || {};
   } catch {
+    // Uszkodzony zapis: zachowaj surowy tekst, zanim kolejny zapis go nadpisze pustym obiektem.
+    try { localStorage.setItem(`${STORAGE_KEY}.corrupt.${Date.now()}`, raw); } catch { /* brak miejsca */ }
     return {};
   }
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function isDayEmpty(d) {
+  return !(d.start || d.cardIn || d.cardOut || d.end || d.pause || d.note);
+}
+
+// Każdy dzień z danymi ma stałe ID (UUID) i znacznik ostatniej modyfikacji — podstawa synchronizacji.
+function touchDay(day) {
+  if (!day.id) day.id = Sync.uuid();
+  day.updatedAt = Date.now();
+}
+
+// Migracja danych sprzed synchronizacji: nadaj ID dniom z danymi, które go jeszcze nie mają.
+function migrateWeeks() {
+  const weeks = loadAllWeeks();
+  const now = Date.now();
+  let changed = false;
+  Object.values(weeks).forEach(days => {
+    if (!Array.isArray(days)) return;
+    days.forEach(d => {
+      if (!d.id && !isDayEmpty(d)) { d.id = Sync.uuid(); d.updatedAt = now; changed = true; }
+    });
+  });
+  if (changed) saveAllWeeks(weeks);
 }
 
 function saveAllWeeks(weeks) {
@@ -116,6 +147,7 @@ function computeWeek(days) {
 }
 
 // --- state ---
+migrateWeeks();
 let currentMonday = getMonday(new Date());
 let currentDays = getWeek(toISODate(currentMonday));
 
@@ -193,23 +225,26 @@ function render() {
 
     tr.innerHTML = `
       <td class="day-cell"><span class="dow">${DOW[idx]}</span>${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}<span class="day-warning-icon hidden">⚠️</span></td>
-      <td data-label="Początek"><input type="time" data-field="start" value="${day.start}"></td>
-      <td data-label="Włożenie karty"><input type="time" data-field="cardIn" value="${day.cardIn}"></td>
-      <td data-label="Wyjęcie karty"><input type="time" data-field="cardOut" value="${day.cardOut}"></td>
+      <td data-label="Początek"><input type="time" data-field="start" value="${escapeHtml(day.start)}"></td>
+      <td data-label="Włożenie karty"><input type="time" data-field="cardIn" value="${escapeHtml(day.cardIn)}"></td>
+      <td data-label="Wyjęcie karty"><input type="time" data-field="cardOut" value="${escapeHtml(day.cardOut)}"></td>
       <td class="computed" data-label="Czas na karcie"></td>
-      <td data-label="Koniec"><input type="time" data-field="end" value="${day.end}"></td>
-      <td data-label="Pauza"><input type="time" data-field="pause" value="${day.pause}"></td>
+      <td data-label="Koniec"><input type="time" data-field="end" value="${escapeHtml(day.end)}"></td>
+      <td data-label="Pauza"><input type="time" data-field="pause" value="${escapeHtml(day.pause)}"></td>
       <td class="computed gross" data-label="Czas brutto"></td>
       <td class="computed net" data-label="Czas netto"></td>
-      <td data-label="Uwagi"><input type="text" data-field="note" value="${day.note}" placeholder="—"></td>
+      <td data-label="Uwagi"><input type="text" data-field="note" value="${escapeHtml(day.note)}" placeholder="—"></td>
     `;
 
     tr.querySelectorAll('input').forEach(input => {
       input.addEventListener('change', () => {
         const field = input.dataset.field;
-        currentDays[idx][field] = input.value;
+        const d = currentDays[idx];
+        d[field] = input.value;
+        if (d.id || !isDayEmpty(d)) touchDay(d);   // dzień, który nigdy nie miał danych, zostaje bez ID
         persistWeek(toISODate(currentMonday), currentDays);
-        updateRowDisplay(tr, currentDays[idx]);
+        Sync.onDayChanged(d);
+        updateRowDisplay(tr, d);
         renderSummary();
       });
     });
@@ -256,7 +291,14 @@ function renderSummary() {
   const s = computeWeek(currentDays);
   document.getElementById('workedDaysLabel').textContent = s.workedDays;
   document.getElementById('sumGross').textContent = formatMin(s.sumGross);
-  document.getElementById('sumNet').textContent = formatMin(s.sumNet);
+
+  // Ujemne netto zostaje w sumach (nie zerujemy), ale suma tygodnia ma to wyraźnie sygnalizować.
+  const hasNegativeNet = currentDays.some(d => { const c = computeDay(d); return c.worked && c.net != null && c.net < 0; });
+  const sumNetEl = document.getElementById('sumNet');
+  sumNetEl.textContent = (hasNegativeNet ? '⚠ ' : '') + formatMin(s.sumNet);
+  sumNetEl.classList.toggle('sum-warning', hasNegativeNet);
+  sumNetEl.title = hasNegativeNet ? 'Co najmniej jeden dzień ma ujemne netto — suma jest zaniżona' : '';
+  document.getElementById('negativeNote').classList.toggle('hidden', !hasNegativeNet);
   document.getElementById('sumPause').textContent = formatMin(s.sumPause);
   document.getElementById('sumDays').textContent = s.workedDays;
   document.getElementById('sumAvg').textContent = formatMin(s.avg);
@@ -270,6 +312,12 @@ function renderSummary() {
 
 function goToWeek(monday) {
   currentMonday = getMonday(monday);
+  currentDays = getWeek(toISODate(currentMonday));
+  render();
+}
+
+// Przeładuj bieżący tydzień z localStorage (po scaleniu danych z chmury / z pliku).
+function refreshCurrentWeek() {
   currentDays = getWeek(toISODate(currentMonday));
   render();
 }
@@ -370,6 +418,7 @@ function renderHistory() {
 }
 
 render();
+Sync.init();
 
 // --- service worker + update banner ---
 if ('serviceWorker' in navigator) {

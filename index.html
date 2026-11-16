@@ -18,11 +18,21 @@
     <button id="updateReloadBtn">Odśwież</button>
   </div>
 
+  <div id="staleBanner" class="stale-banner hidden" role="alert">
+    <span id="staleText"></span>
+    <button id="staleRetry" type="button">Spróbuj teraz</button>
+  </div>
+
   <header class="week-header">
     <button id="prevWeek" class="nav-btn" aria-label="Poprzedni tydzień">‹</button>
     <h1 id="weekTitle">📅 Tydzień: —</h1>
     <button id="nextWeek" class="nav-btn" aria-label="Następny tydzień">›</button>
   </header>
+
+  <div class="sync-bar">
+    <button id="syncStatus" class="sync-status off" type="button">☁️ Synchronizacja wyłączona</button>
+    <button id="settingsBtn" class="icon-btn" type="button" aria-label="Ustawienia synchronizacji">⚙</button>
+  </div>
 
   <div class="table-wrap">
     <table id="weekTable">
@@ -59,15 +69,49 @@
         <tr><td>📈 Średnia netto/dzień</td><td id="sumAvg">00:00</td></tr>
       </tbody>
     </table>
+    <p id="negativeNote" class="warn-note hidden">⚠ Co najmniej jeden dzień ma ujemne netto (pauza dłuższa niż czas pracy) — suma tygodnia jest zaniżona.</p>
     <p id="motivation"></p>
   </section>
 
   <footer class="history">
     <button id="historyBtn">📚 Historia tygodni</button>
     <div id="historyList" class="history-list hidden"></div>
+
+    <div class="backup-row">
+      <button id="restoreBtn" type="button">☁️ Przywróć z chmury</button>
+      <button id="exportBtn" type="button">💾 Eksport JSON</button>
+      <button id="importBtn" type="button">📂 Import JSON</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
   </footer>
 
 </div>
+
+<dialog id="settingsDialog">
+  <h3>☁️ Synchronizacja z Arkuszem Google</h3>
+  <label for="settingsUrl">Adres skryptu (Web App, kończy się na /exec)</label>
+  <input type="text" id="settingsUrl" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec">
+  <label for="settingsToken">Token</label>
+  <input type="password" id="settingsToken" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <p class="dialog-hint">Adres i token zapisują się wyłącznie w tym telefonie. Instrukcja: SYNC-SETUP.md.</p>
+  <p id="settingsMsg" class="dialog-msg" role="status"></p>
+  <div class="dialog-actions">
+    <button id="settingsTest" type="button">Testuj połączenie</button>
+    <button id="settingsSave" type="button" class="primary">Zapisz</button>
+    <button id="settingsCancel" type="button">Anuluj</button>
+  </div>
+  <button id="settingsClear" type="button" class="link-danger">Usuń konfigurację z tego telefonu</button>
+</dialog>
+
+<dialog id="reportDialog">
+  <h3 id="reportTitle"></h3>
+  <div id="reportBody"></div>
+  <div class="dialog-actions">
+    <button id="reportClose" type="button" class="primary">OK</button>
+  </div>
+</dialog>
+
+<script src="sync.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

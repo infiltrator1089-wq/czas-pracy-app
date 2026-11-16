@@ -1,6 +1,6 @@
-const CACHE = 'czas-pracy-v3';
-const APP_SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest', './icon.svg'];
-const NETWORK_FIRST_FILES = ['index.html', 'app.js', 'styles.css'];
+const CACHE = 'czas-pracy-v4';
+const APP_SHELL = ['./', './index.html', './styles.css', './app.js', './sync.js', './manifest.webmanifest', './icon.svg'];
+const NETWORK_FIRST_FILES = ['index.html', 'app.js', 'sync.js', 'styles.css'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)));
