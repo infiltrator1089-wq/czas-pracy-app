@@ -92,8 +92,9 @@ body {
 table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 760px;
 }
+/* Tylko tabela dni jest szeroka (przewijana poziomo); tabela podsumowania ma zostać w ramach karty. */
+.table-wrap table { min-width: 760px; }
 
 thead th {
   text-align: left;
@@ -376,27 +377,28 @@ dialog button.link-danger {
    Switch to a stacked card-per-day layout so no column widths need
    to line up across rows. */
 @media (max-width: 640px) {
+  /* Wszystko poniżej dotyczy WYŁĄCZNIE tabeli dni (.table-wrap) — nie tabeli podsumowania. */
   .table-wrap { overflow-x: visible; }
 
-  table, thead, tbody, tr, .table-wrap th {
+  .table-wrap table, .table-wrap thead, .table-wrap tbody, .table-wrap tr, .table-wrap th {
     display: block;
     width: 100%;
   }
   .table-wrap table { min-width: 0; }
-  thead { display: none; }
+  .table-wrap thead { display: none; }
 
-  tbody tr {
+  .table-wrap tbody tr {
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 10px;
     margin-bottom: 10px;
   }
-  tbody tr:nth-child(even), tbody tr:nth-child(odd) {
+  .table-wrap tbody tr:nth-child(even), .table-wrap tbody tr:nth-child(odd) {
     background: var(--card-alt);
   }
-  tbody tr:last-child { margin-bottom: 0; }
+  .table-wrap tbody tr:last-child { margin-bottom: 0; }
 
-  tbody td {
+  .table-wrap tbody tr td {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -405,8 +407,8 @@ dialog button.link-danger {
     border-bottom: 1px solid var(--border);
     white-space: normal;
   }
-  tbody td:last-child { border-bottom: none; }
-  tbody td[data-label]::before {
+  .table-wrap tbody tr td:last-child { border-bottom: none; }
+  .table-wrap tbody td[data-label]::before {
     content: attr(data-label);
     color: var(--muted);
     font-size: 12.5px;
@@ -425,7 +427,7 @@ dialog button.link-danger {
   }
   .day-cell .dow { display: inline; margin-right: 6px; }
 
-  input[type="time"], input[type="text"] {
+  .table-wrap input[type="time"], .table-wrap input[type="text"] {
     width: auto;
     max-width: 150px;
     text-align: right;

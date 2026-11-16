@@ -32,7 +32,9 @@ Czas: ok. 10–15 minut, jednorazowo. Potrzebujesz konta Google i komputera.
 
 ## Krok 3 — uruchom `setup` (utworzy karty i token)
 
-1. Na pasku nad kodem wybierz z listy funkcji **`setup`** i kliknij **Uruchom** (*Run*).
+1. Na pasku nad kodem, obok przycisku **Uruchom** (*Run*), jest lista funkcji — domyślnie
+   ustawiona na `doGet`. **Zmień ją na `setup`** (to najczęstsza pomyłka), potem kliknij **Uruchom**.
+   (Jeśli w widoku *Wykonania / Executions* widzisz tylko wiersz z `doGet`, uruchomiłeś złą funkcję.)
 2. Google poprosi o uprawnienia → **Przejrzyj uprawnienia** → wybierz swoje konto.
 3. Zobaczysz ostrzeżenie „Ta aplikacja nie jest zweryfikowana”. To normalne dla
    własnego skryptu: **Zaawansowane → Otwórz projekt (niebezpieczne)** → **Zezwól**.
@@ -43,6 +45,10 @@ Czas: ok. 10–15 minut, jednorazowo. Potrzebujesz konta Google i komputera.
    ```
    TOKEN (skopiuj do ustawień aplikacji): <64 znaki>
    ```
+
+   Jeśli logu nie widać na dole edytora: w widoku *Wykonania / Executions* rozwiń wiersz
+   funkcji `setup` i w „Cloud logs” kliknij *Odśwież / Refresh* (logi bywają opóźnione).
+   Token jest też w *Ustawienia projektu → Właściwości skryptu → TOKEN*.
 
    **Skopiuj ten token** (sprawdź też, że w arkuszu pojawiły się karty „Dane” i „Historia”).
    Token jest zapisany także w: *Ustawienia projektu (ikona koła zębatego) →
